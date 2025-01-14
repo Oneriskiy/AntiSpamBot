@@ -15,7 +15,7 @@ async def StartFunc(message: types.Message):
 @router.message()
 async def FirstFunc(message: types.Message):
     user_message = message.text
-    if (user_message != "Я бот"):
+    if (user_message != "Я не бот"):
         builder = InlineKeyboardMarkup(inline_keyboard=[    
                 [InlineKeyboardButton(text="Узнать кто пишет", callback_data="answer")],
             ])
@@ -24,12 +24,23 @@ async def FirstFunc(message: types.Message):
     else:  
         await message.answer(f"{message.from_user.full_name} - Вы Бот")
      
+@router.message()
+async def FirstFunc(message: types.Message):
+    user_message = message.text
 
-@router.callback_query(lambda c: c.data == 'answer')
+    # Сохраняем user_id в callback_data
+    builder = InlineKeyboardMarkup(inline_keyboard=[    
+        [InlineKeyboardButton(text="Ответить", callback_data=str(message.from_user.id))],
+    ])
+    
+    await bot.send_message(ADMIN_ID, f"Сообщение от Пользователя {message.from_user.full_name} \n\n{user_message}", reply_markup=builder)
+    await message.reply("Сообщение отправлено! Данный бот создан @Oneriiskiy")
+
+@router.callback_query()
 async def answer(callback_query: types.CallbackQuery):
-    username = callback_query.from_user.username  
-    fullname = callback_query.from_user.full_name  
-    await callback_query.message.edit_text(f"Имя пользователя: @{username} - Его имя - {fullname}")
+    user_id = int(callback_query.data.split('_')[1])
+    user = await bot.get_chat(user_id)  
+    await callback_query.message.edit_text(f"Имя пользователя: @{user.username} - Его имя: {user.full_name}")
 
 
 async def main_func():
